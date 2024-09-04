@@ -62,6 +62,16 @@ public:
     };
 
 private:
+    // namespace
+    using Filter = juce::dsp::IIR::Filter<float>;
+    
+    //processing context
+    using CutFilter = juce::dsp::ProcessorChain<Filter,Filter,Filter,Filter>; 
+
+    using Monochain = juce::dsp::ProcessorChain<CutFilter,Filter,CutFilter>;
+
+    Monochain leftChain, rightChain; //two channels for stereo
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleEQAudioProcessor)
 };
