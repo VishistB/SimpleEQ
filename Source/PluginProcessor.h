@@ -10,6 +10,17 @@
 
 #include <JuceHeader.h>
 
+// data stucture to extract parameters from apvts
+struct chainSettings
+{
+  float peakFreq {0}, peakGainInDecibels {0}, peakQuality {1.f};
+  float lowCutFreq {0}, highCutFreq {0};
+  int lowCutSlope {0}, highCutSlope {0};
+};
+
+// helper function
+chainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts);
+
 //==============================================================================
 /**
 */
@@ -71,6 +82,13 @@ private:
     using Monochain = juce::dsp::ProcessorChain<CutFilter,Filter,CutFilter>;
 
     Monochain leftChain, rightChain; //two channels for stereo
+
+    enum ChainPositions
+    {
+      LowCut,
+      Peak,
+      HighCut
+    };
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleEQAudioProcessor)
