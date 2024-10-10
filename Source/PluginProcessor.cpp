@@ -115,7 +115,17 @@ void SimpleEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlo
     *leftChain.get<ChainPositions::Peak>().coefficients=*peakCoefficients;
     *rightChain.get<ChainPositions::Peak>().coefficients=*peakCoefficients;
 
-    juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(0, 0, 0);
+    // slope choice 0: 12 db/oct -> order:2
+    // slope choice 0: 24 db/oct -> order:4
+    // slope choice 0: 36 db/oct -> order:6
+    // slope choice 0: 48 db/oct -> order:8
+    juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(chainSettings.lowCutFreq, sampleRate, 2*(chainSettings.lowCutSlope+1));
+
+    auto& leftLowCut = leftChain.get<ChainPositions::LowCut>();
+    leftLowCut.setBypassed<0>(true);
+    leftLowCut.setBypassed<1>(true);
+    leftLowCut.setBypassed<2>(true);
+    leftLowCut.setBypassed<3>(true);
 }
 
 void SimpleEQAudioProcessor::releaseResources()
@@ -221,12 +231,18 @@ chainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts)
 
     //struct variables at the top of PluginProcessor.h being set 
     settings.lowCutFreq=apvts.getRawParameterValue("LowCut Freq")->load();
+
     settings.highCutFreq=apvts.getRawParameterValue("HighCut Freq")->load();
+
     settings.peakFreq=apvts.getRawParameterValue("Peak Freq")->load();
+
     settings.peakGainInDecibels=apvts.getRawParameterValue("Peak Gain")->load();
+
     settings.peakQuality=apvts.getRawParameterValue("Peak Quality")->load();
-    settings.lowCutSlope=apvts.getRawParameterValue("LowCut Slope")->load();
-    settings.lowCutSlope=apvts.getRawParameterValue("LowCut Slope")->load();
+
+    settings.lowCutSlope=static_cast<Slope>(apvts.getRawParameterValue("LowCut Slope")->load());
+
+    settings.lowCutSlope=static_cast<Slope>(apvts.getRawParameterValue("HighCut Slope")->load());
 
     return settings;
 }
@@ -251,7 +267,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout
                 20000.f
             )
         );
-        layout.add(Explanation: The next greater element for each value of nums1 is as follows:
+        layout.add( 
             std::make_unique<juce::AudioParameterFloat>(
                 "Peak Freq","Peak Freq",
                 juce::NormalisableRange<float>(20.f,20000.f,1.f,0.25f),
@@ -277,6 +293,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout
         for(int i=0;i<4;i++){
             juce::String str;
             str << (12 + i*12);
+            // Slope Choice 0: 12db/Oct ->order: 2
+            // Slope Choice 1: 24db/Oct ->order: 4
+            // Slope Choice 2: 36db/Oct ->order: 6
+            // Slope Choice 3: 48db/Oct ->order: 8
             str << " db/Oct"; //decibels per octave
             stringArray.add(str);
         }
