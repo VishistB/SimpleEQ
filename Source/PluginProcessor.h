@@ -19,7 +19,7 @@ enum Slope
 };
 
 // data stucture to extract parameters from apvts
-struct chainSettings
+struct ChainSettings
 {
   float peakFreq {0}, peakGainInDecibels {0}, peakQuality {1.f};
   float lowCutFreq {0}, highCutFreq {0};
@@ -27,7 +27,7 @@ struct chainSettings
 };
 
 // helper function
-chainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts);
+ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts);
 
 //==============================================================================
 /**
@@ -98,6 +98,9 @@ private:
       HighCut
     };
 
+    void updatePeakFilter(const ChainSettings& chainSettings);
+    using Coefficients = Filter::CoefficientsPtr;
+    static void updateCoefficients(Coefficients& old, const Coefficients& replacements);
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleEQAudioProcessor)
 };
