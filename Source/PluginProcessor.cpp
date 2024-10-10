@@ -114,6 +114,8 @@ void SimpleEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlo
     );
     *leftChain.get<ChainPositions::Peak>().coefficients=*peakCoefficients;
     *rightChain.get<ChainPositions::Peak>().coefficients=*peakCoefficients;
+
+    juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(0, 0, 0);
 }
 
 void SimpleEQAudioProcessor::releaseResources()
